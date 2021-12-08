@@ -14,6 +14,7 @@ class _LoginPageState extends State<LoginPage> {
     passwordVisible = true;
   }
 */
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,42 +35,44 @@ class _LoginPageState extends State<LoginPage> {
          //padding: EdgeInsets.only(left: 10, right: 10, top: 0, bottom: 0),
          child: Center(
            child: SingleChildScrollView(
-             child: Column(
-               children: <Widget>[
-                 /*Container(
+             child: Form(
+               key: _formKey,
+               child: Column(
+                 children: <Widget>[
+                   /*Container(
                    padding: EdgeInsets.all(20),
                    margin: EdgeInsets.only(left: 20, right: 20),
                      decoration: BoxDecoration(
                         color: Colors.white,
                      ),
                    ),*/
-                 Container(
-                   padding:const EdgeInsets.all(5),
-                   margin:const EdgeInsets.only(bottom:40),
-                   width: 100,
-                   height: 100,
-                   decoration: BoxDecoration(
-                     color: Color(0xffe6e6e6),
-                     borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                     border: Border.all(
-                       color: Colors.black12,
-                       width: 1.2,
-                       style: BorderStyle.solid,
-                     ),
-                     boxShadow: [ //background color of box
-                       BoxShadow(
+                   Container(
+                     padding:const EdgeInsets.all(5),
+                     margin:const EdgeInsets.only(bottom:40),
+                     width: 100,
+                     height: 100,
+                     decoration: BoxDecoration(
+                       color: Color(0xffe6e6e6),
+                       borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                       border: Border.all(
                          color: Colors.black12,
-                         blurRadius:5.0, // soften the shadow
-                         spreadRadius: 1.0, //extend the shadow
-                         offset: Offset(
-                           1.0, // Move to right 10  horizontally
-                           5.0, // Move to bottom 10 Vertically
-                         ),
-                       )
-                     ],
+                         width: 1.2,
+                         style: BorderStyle.solid,
+                       ),
+                       boxShadow: [ //background color of box
+                         BoxShadow(
+                           color: Colors.black12,
+                           blurRadius:5.0, // soften the shadow
+                           spreadRadius: 1.0, //extend the shadow
+                           offset: Offset(
+                             1.0, // Move to right 10  horizontally
+                             5.0, // Move to bottom 10 Vertically
+                           ),
+                         )
+                       ],
+                     ),
+                     child: Icon(Icons.person,color:Colors.white,size: 50,),
                    ),
-                   child: Icon(Icons.person,color:Colors.white,size: 50,),
-                  ),
                    Container(
                      padding: EdgeInsets.only(left: 0, right: 0, bottom: 0, top: 0),
                      margin: EdgeInsets.only(left: 20, right: 20),
@@ -113,6 +116,13 @@ class _LoginPageState extends State<LoginPage> {
                        ),
                        keyboardType :
                        TextInputType.emailAddress,
+                       // The validator receives the text that the user has entered.
+                       validator: (value) {
+                         if (value == null || value.isEmpty) {
+                           return 'Please enter email address';
+                         }
+                         return null;
+                       },
                      ),
                    ),
                    SizedBox(height:18),
@@ -137,14 +147,14 @@ class _LoginPageState extends State<LoginPage> {
                      child: TextFormField(
                        obscureText : !passwordVisible,
                        decoration: InputDecoration(
-                           labelText: 'Password',
-                           labelStyle: TextStyle(
+                         labelText: 'Password',
+                         labelStyle: TextStyle(
                              color:Colors.black
-                           ),
-                           fillColor: Colors.black,
-                           border: new UnderlineInputBorder(
-                               borderSide: new BorderSide(color: Colors.white),
-                           ),
+                         ),
+                         fillColor: Colors.black,
+                         border: new UnderlineInputBorder(
+                           borderSide: new BorderSide(color: Colors.white),
+                         ),
                          enabledBorder: UnderlineInputBorder(
                            borderSide: BorderSide(color: Colors.transparent),
                          ),
@@ -166,6 +176,13 @@ class _LoginPageState extends State<LoginPage> {
                          ),
                        ),
                        keyboardType : TextInputType.visiblePassword,
+                       // The validator receives the text that the user has entered.
+                       validator: (value) {
+                         if (value == null || value.isEmpty) {
+                           return 'Please enter password';
+                         }
+                         return null;
+                       },
                      ),
                    ),
                    SizedBox(height:20),
@@ -199,6 +216,15 @@ class _LoginPageState extends State<LoginPage> {
                        ),
                      ),
                      onTap:() {
+                       // Validate returns true if the form is valid, or false otherwise.
+                       if (_formKey.currentState!.validate()) {
+                         // If the form is valid, display a snackbar. In the real world,
+                         // you'd often call a server or save the information in a database.
+                         
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           const SnackBar(content: Text('Processing Data')),
+                         );
+                       }
                        /*Navigator.of(context).push(MaterialPageRoute<Null>(
                                    builder: (BuildContext context) {
                                       return Registerpage();
@@ -245,7 +271,8 @@ class _LoginPageState extends State<LoginPage> {
                        ],
                      ),
                    ),
-               ],
+                 ],
+               ),
              ),
            ),
          ),
