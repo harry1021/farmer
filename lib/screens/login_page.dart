@@ -1,6 +1,15 @@
+import 'package:dio/dio.dart';
+import 'package:farmer/config/config.dart';
+import 'package:farmer/db_helper/db_helper.dart';
+import 'package:farmer/models/User..dart';
+import 'package:farmer/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'register_page.dart';
+import 'tab_controller.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -10,17 +19,54 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
 
   bool passwordVisible=true;
+  bool? isLoggedIn =false;
   /*void initState() {
     passwordVisible = true;
   }
 */
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  Auth? auth;
+
+  bool loading = false;
+  void onLoginStatusChanged(bool isLoggedIn) {
+    setState(() {
+      this.isLoggedIn = isLoggedIn;
+    });
+  }
+  insert(token,name,email,picture,type) async {
+    // get a reference to the database
+    // because this is an expensive operation we use async and await
+    Database? db = await DatabaseHelper.instance.database;
+    print('name: ${name}');
+    print('email: ${email}');
+    print('picture: ${picture}');
+    print('type: ${type}');
+    // row to insert
+    Map<String, dynamic> row = {
+      DatabaseHelper.columnToken  : token,
+      DatabaseHelper.columnEmail  : email,
+      DatabaseHelper.columnPicture  : picture,
+      DatabaseHelper.columnName  : name,
+      DatabaseHelper.columnUserType  : type
+    };
+    var resultData = await db!.query(DatabaseHelper.table);
+    if(resultData.length == 0) {
+      // do the insert and get the id of the inserted row
+      int id = await db.insert(DatabaseHelper.table, row);
+    }
+    // show the results: print all rows in the db
+    resultData = await db.query(DatabaseHelper.table);
+  }
+
   @override
   Widget build(BuildContext context) {
+    auth = Provider.of<Auth>(context);
     return Scaffold(
       backgroundColor: Color(0xffe6e6e6),
        appBar: AppBar(backgroundColor: Colors.transparent,elevation: 0.0,automaticallyImplyLeading: false,),
-       body: Container(
+       body: loading ==true? Center(child: CircularProgressIndicator()) : Container(
          decoration: BoxDecoration(
              /*gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -92,6 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                        ],
                      ),
                      child: TextFormField(
+                       controller: _emailController,
                        decoration: InputDecoration(
                          labelText: 'Email',
                          labelStyle: TextStyle(
@@ -146,6 +193,7 @@ class _LoginPageState extends State<LoginPage> {
                      ),
                      child: TextFormField(
                        obscureText : !passwordVisible,
+                       controller: _passwordController,
                        decoration: InputDecoration(
                          labelText: 'Password',
                          labelStyle: TextStyle(
@@ -192,7 +240,7 @@ class _LoginPageState extends State<LoginPage> {
                        margin: EdgeInsets.only(left: 20, right: 20),
                        width: MediaQuery.of(context).size.width/ 1,
                        decoration: BoxDecoration(
-                         color: Theme.of(context).buttonColor,
+                         color: Theme.of(context).primaryColor,
                          borderRadius: BorderRadius.all(Radius.circular(50.0)),
                          border: Border.all(
                            color: Colors.white,
@@ -215,16 +263,50 @@ class _LoginPageState extends State<LoginPage> {
                          child: Text('Login',style: TextStyle(color: Colors.white),),
                        ),
                      ),
-                     onTap:() {
+                     onTap:() async {
                        // Validate returns true if the form is valid, or false otherwise.
-                       if (_formKey.currentState!.validate()) {
-                         // If the form is valid, display a snackbar. In the real world,
-                         // you'd often call a server or save the information in a database.
-                         
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(content: Text('Processing Data')),
-                         );
-                       }
+                         if (_formKey.currentState!.validate()) {
+                           loading = true;
+                           // If the form is valid, display a snackbar. In the real world,
+                           // you'd often call a server or save the information in a database.
+                           var dio = Dio();
+                           dio.options.headers['Accept'] = 'application/json';
+                           try{
+                          var response = await dio.post(
+                          Configuration.API_URL+'auth/login', data:{'email': _emailController.text, 'password': _passwordController.text});
+
+                            onLoginStatusChanged(true);
+                            Result result = Result.fromJson(response.data);
+                            Users user = result.success;
+                            await insert(user.token,user.name,user.email, user.picture,user.userType);
+                            await auth!.authenticated();
+                            setState(() {
+                            loading = false;
+                            });
+                            Fluttertoast.showToast(
+                            msg: "Logged in successfully",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: Colors.black,
+                            textColor: Colors.white,
+                            fontSize: 16.0
+                            );
+                            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => TabPage()),(route) => false,);
+
+                           }on DioError catch (e) {
+                               loading = false;
+                             Fluttertoast.showToast(
+                                 msg: e.response.data['message'],
+                                 toastLength: Toast.LENGTH_SHORT,
+                                 gravity: ToastGravity.BOTTOM,
+                                 backgroundColor: Colors.red,
+                                 textColor: Colors.white,
+                                 fontSize: 16.0
+                             );
+
+                           }
+                         }
+
                        /*Navigator.of(context).push(MaterialPageRoute<Null>(
                                    builder: (BuildContext context) {
                                       return Registerpage();

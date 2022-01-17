@@ -1,6 +1,9 @@
+import 'package:farmer/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'login_page.dart';
+import 'user_profile.dart';
 
 
 class AuthPage extends StatefulWidget {
@@ -13,6 +16,10 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<Auth>(context);
+    if(auth.dataLoaded == null || auth.dataLoaded == 0){
+      auth.authenticated();
+    }
     return Scaffold(
       backgroundColor: Color(0xffe6e6e6),
       //backgroundColor: Theme.of(context).primaryColor,
@@ -27,23 +34,39 @@ class _AuthPageState extends State<AuthPage> {
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            ListTile(
-              leading: Container(
-                width: 55,
-                height: 55,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 1.2,
-                    style: BorderStyle.solid,
+            InkWell(
+              child: ListTile(
+                leading: Container(
+                  width: 55,
+                  height: 55,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1.2,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: InkWell(
+                    child: Icon(Icons.person,color:Colors.white,size: 30,),
+                    onTap: (){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => UserProfile()),
+                      );
+                    },
                   ),
                 ),
-                child: Icon(Icons.person,color:Colors.white,size: 30,),
+                title: Text(auth.name != '' || auth.name != null ? auth.name.toString() :'Login'),
+                subtitle: Text(auth.name != '' || auth.name != null ? '': 'Login in to your account'),
               ),
-              title: Text('Login'),
-              subtitle: Text('Login in to your account'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserProfile()),
+                );
+              },
             ),
             SizedBox(height: 40),
             Divider(),
@@ -81,10 +104,11 @@ class _AuthPageState extends State<AuthPage> {
                   ],
                 ),
                 child: Center(
-                  child: Text('Login & Signup',style: TextStyle(color: Colors.white),),
+                  child: Text(auth.name != '' || auth.name != null ? 'Logout' :'Login & Signup',style: TextStyle(color: Colors.white),),
                 ),
               ),
               onTap:() {
+                if(auth.name != '' || auth.name != null){auth.logout();}
                 Navigator.of(context).push(MaterialPageRoute<Null>(
                     builder: (BuildContext context) {
                       return LoginPage();

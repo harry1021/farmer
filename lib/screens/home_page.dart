@@ -1,5 +1,9 @@
+import 'package:farmer/config/config.dart';
+import 'package:farmer/providers/ads.dart';
 import 'package:flutter/material.dart';
-
+import 'package:geocoding/geocoding.dart';
+import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
 import 'single_view.dart';
 
 
@@ -10,23 +14,66 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Ads? ads;
+   late Position _currentPosition;
+   String currentAddress = '';
+   Position? position;
+   LocationPermission? permission;
+
+  bool searchTapped = false;
+  Widget appBarTitle = new Text("", style: new TextStyle(color: Colors.white),);
+  Icon actionIcon = new Icon(Icons.search, color: Colors.white,);
+  TextEditingController searchText = TextEditingController();
+
+  bool _IsSearching = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+  getPermission() async {
+    permission = await Geolocator.requestPermission();
+    getLocation();
+  }
+  getLocation() async {
+    position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    print('location');
+    print(position!.longitude.toString()+','+position!.latitude.toString());
+    List<Placemark> placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
+    print(placemarks[0].name);
+    setState(() {
+       currentAddress = placemarks[0].name.toString();
+    });
+
+  }
+  void _handleSearchStart() {
+    setState(() {
+      _IsSearching = true;
+    });
+  }
+
+  void _handleSearchEnd() {
+    setState(() {
+      this.actionIcon = new Icon(Icons.search, color: Colors.white,);
+      this.appBarTitle =
+      new Text("", style: new TextStyle(color: Colors.white),);
+      _IsSearching = false;
+      searchText.clear();
+    });
+  }
   @override
   Widget build(BuildContext context) {
+    if(permission == null){
+      getPermission();
+    }
+    ads = Provider.of<Ads>(context);
+    print(ads!.dataLoaded );
+    if(ads!.dataLoaded == 0){
+      ads!.getads();
+    }
     return Scaffold(
-       // backgroundColor: Theme.of(context).primaryColor,
-        /*backgroundColor: Color(0xff336600),
-    appBar: AppBar(
-      leading: Icon(Icons.location_on,color: Color(0xff336600),size:30),
-      actions: <Widget>[
-        Icon(Icons.search,color: Color(0xff336600),size:30),
-        Icon(Icons.person,color: Color(0xff336600),size:30),
-      ],
-      backgroundColor: Color(0xffffffff),
-      elevation: 0,
 
-    ),*/
-
-        body: CustomScrollView(
+        body: ads!.dataLoaded  == 0 ? Center(child: CircularProgressIndicator(),) :CustomScrollView(
           slivers: <Widget>[
             SliverAppBar(
               backgroundColor: Theme.of(context).primaryColor,
@@ -38,29 +85,44 @@ class _HomePageState extends State<HomePage> {
               floating: false,
               expandedHeight: 120.0,
               leading: Icon(Icons.location_on),
+              title: appBarTitle,
               actions: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(Icons.search),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(Icons.person),
-                ),
+                new IconButton(icon: actionIcon, onPressed: () {
+                  setState(() {
+                    if (this.actionIcon.icon == Icons.search) {
+                      this.actionIcon = new Icon(Icons.close, color: Colors.white,);
+                      this.appBarTitle = new TextField(
+                        controller: searchText,
+                        onChanged: (value){
+                          ads!.searchAds(value);
+                        },
+                        style: new TextStyle(
+                          color: Colors.white,
+
+                        ),
+                        decoration: new InputDecoration(
+                            prefixIcon: new Icon(Icons.search, color: Colors.white),
+                            hintText: "Search...",
+                            hintStyle: new TextStyle(color: Colors.white)
+                        ),
+                      );
+                       _handleSearchStart();
+                    }
+                    else {
+                      _handleSearchEnd();
+                    }
+                  });
+                },),
+
+
               ],
-              flexibleSpace: const FlexibleSpaceBar(
-                title: Text('Chandigarh',style: TextStyle(fontSize: 16,color: Colors.white,),),
+              flexibleSpace:  FlexibleSpaceBar(
+                title: Text(currentAddress,style: TextStyle(fontSize: 16,color: Colors.white)),
                 //background: ,
               ),
               shape: ContinuousRectangleBorder(
                   borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(230), bottomRight: Radius.circular(230))),
-  /*bottom: PreferredSize(
-      child: Container(
-        color: Colors.orange,
-        height: 4.0,
-      ),
-      preferredSize: Size.fromHeight(4.0)),*/
             ),
 
             const SliverToBoxAdapter(
@@ -104,285 +166,55 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
+                            ads!.addata[index].attachment != null || ads!.addata[index].attachment != '' ?
+                            Image.network(Configuration.PUBLIC_URL+ads!.addata[index].attachment.toString(),
+                              width: MediaQuery.of(context).size.width,
+                              height: 80,
+                            ) :
                             Image.asset('assets/images/new-holland.png',
                               width: MediaQuery.of(context).size.width,
                               height: 80,
                             ),
                             SizedBox(height:(3)),
-                            Expanded(child: Text('New Holland')),
+                            Expanded(child: Text(ads!.addata[index].adtitle.toString())),
                             SizedBox(height:(3)),
                             Row(
                               children: <Widget>[
                                 Text(' RS: '),
-                                Expanded(child: Text(' 7,000000')),
+                                Expanded(child: Text(ads!.addata[index].price.toString())),
                               ],
                             ),
-                            SizedBox(height:(3)),
+                            /*SizedBox(height:(3)),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
                                 Text('2017 - '),
                                 Expanded(child: Text(' 70,0000km')),
                               ],
-                            ),
+                            ),*/
                             SizedBox(height:(3)),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Icon(Icons.location_on,size:15),
-                                Expanded(child: Text('Ambala')),
+                                Expanded(child: Text(ads!.addata[index].location.toString())),
                               ],
                             ),
                           ],
                         ),
                       ),
                       onTap:() {
-                        Navigator.of(context).push(MaterialPageRoute<Null>(builder: (BuildContext context){return SingleViewPage();
+                        Navigator.of(context).push(MaterialPageRoute<Null>(builder: (BuildContext context){return SingleViewPage(ads!.addata[index].id);
                         }));
                       },
 
-
-                      /*Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(42),
-                        topLeft: Radius.circular(42),
-                      ),
-                    ),
-                    //height: MediaQuery.of(context).size.height/1.3,
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: Column(
-                      children: <Widget>[
-
-                      ],
-                    ),*/
-
-                      /*child: GridView.builder(
-                      primary: false,
-                      shrinkWrap: false,
-                      padding: const EdgeInsets.only(top: 20,left: 10,right: 10),
-                      gridDelegate:
-                      new SliverGridDelegateWithFixedCrossAxisCount(crossAxisSpacing: 8.0, mainAxisSpacing: 2.0, crossAxisCount: 2,childAspectRatio: MediaQuery.of(context).size.width /
-                          (450 )),
-                      itemBuilder: (BuildContext context, int index) {
-                        return new GridTile(
-                          // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          child:
-                        );
-                      },
-                    ),*/
                     ),
                   );
                 },
+                childCount: ads!.addata.length,
               ),
             ),
 
           ],
         ));
-
   }}
-
-
-/*body: SingleChildScrollView(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            bottomRight: Radius.circular(22),
-            bottomLeft: Radius.circular(22),
-          ),
-        ),
-        height: MediaQuery.of(context).size.height/1.3,
-        padding: EdgeInsets.only(bottom: 10),
-        child: GridView.count(
-          primary: false,
-          padding: const EdgeInsets.all(20),
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          crossAxisCount: 2,
-          children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [ //background color of box
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius:5.0, // soften the shadow
-                    spreadRadius: 1.0, //extend the shadow
-                    offset: Offset(
-                      1.0, // Move to right 10  horizontally
-                      5.0, // Move to bottom 10 Vertically
-                    ),
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Text("tr"),
-            ),
-          ],
-        ),
-      ),
-    ),*/
