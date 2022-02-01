@@ -18,7 +18,7 @@ class ChatPage extends StatelessWidget {
                 elevation: 0,
                 automaticallyImplyLeading: false,
                  //title: Text('Sell Any Item',style: TextStyle(fontFamily: 'Montserrat-Regular',fontWeight: FontWeight.bold)),
-                backgroundColor: Color.fromRGBO(76, 165, 13, 1),
+                backgroundColor: Theme.of(context).primaryColor,
                 title:
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

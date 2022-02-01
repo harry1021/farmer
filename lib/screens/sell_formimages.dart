@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:farmer/config/config.dart';
+import 'package:farmer/presentation/my_flutter_app_icons.dart';
 import 'package:farmer/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,6 +23,7 @@ class SellFormImages extends StatefulWidget {
 
 class _SellFormState extends State<SellFormImages> {
    File? _image;
+
    final ImagePicker _picker = ImagePicker();
    var id;
   bool loading = false;
@@ -56,14 +58,14 @@ class _SellFormState extends State<SellFormImages> {
               child: new Wrap(
                 children: <Widget>[
                   new ListTile(
-                      leading: new Icon(Icons.photo_library),
+                      leading: new Icon(Icons.photo_library,color: Colors.black,size: 24,),
                       title: new Text('Photo Library'),
                       onTap: () {
                         _imgFromGallery();
                         Navigator.of(context).pop();
                       }),
                   new ListTile(
-                    leading: new Icon(Icons.photo_camera),
+                    leading: new Icon(Icons.photo_camera,color: Colors.black,size: 24,),
                     title: new Text('Camera'),
                     onTap: () {
                       _imgFromCamera();
@@ -86,7 +88,7 @@ class _SellFormState extends State<SellFormImages> {
     return Scaffold(
       //backgroundColor: Theme.of(context).primaryColor,
       backgroundColor: Color(0xffe6e6e6),
-      appBar: AppBar(backgroundColor: Colors.transparent,elevation: 0.0,),
+      appBar: AppBar(backgroundColor: Theme.of(context).primaryColor,elevation: 2.0,),
       body: loading == true ? Center(child: CircularProgressIndicator(),) : Container(
         padding: EdgeInsets.all(20),
         margin: EdgeInsets.only(left: 20, right: 20),
@@ -191,28 +193,33 @@ class _SellFormState extends State<SellFormImages> {
                   },
                   child: CircleAvatar(
                     radius: 55,
-                    backgroundColor: Color(0xffFDCF09),
+                    backgroundColor: Colors.transparent,
                     child: _image != null
                         ? ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                      child: Image.file(
-                        _image!,
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.fitHeight,
-                      ),
-                    )
+                          borderRadius: BorderRadius.circular(50),
+                          child: Image.file(
+                            _image!,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        )
                         : Container(
-                      decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(50)),
-                      width: 100,
-                      height: 100,
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Colors.grey[800],
-                      ),
-                    ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor,
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1.2,
+                              style: BorderStyle.solid,
+                            ),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          width: 100,
+                          height: 100,
+                          child: Icon(
+                            MyFlutterApp.device_camera,color:Colors.white,size: 45,
+                          ),
+                        ),
                   ),
                 ),
               )
@@ -226,7 +233,7 @@ class _SellFormState extends State<SellFormImages> {
           padding: EdgeInsets.all(5),
           width: MediaQuery.of(context).size.width/ 1,
           decoration: BoxDecoration(
-            color: Theme.of(context).buttonColor,
+            color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.all(Radius.circular(0.0)),
             border: Border.all(
               color: Colors.white,
@@ -250,6 +257,18 @@ class _SellFormState extends State<SellFormImages> {
           ),
         ),
         onTap:() async {
+
+          if(_image == null){
+            Fluttertoast.showToast(
+                msg: "Please select image!",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0
+            );
+            return;
+          }
           setState(() {
             loading = true;
           });

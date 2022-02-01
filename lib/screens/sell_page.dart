@@ -1,3 +1,4 @@
+import 'package:farmer/Sizeconfig.dart';
 import 'package:farmer/providers/Categories.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +30,7 @@ class _SellPageState extends State<SellPage> {
       backgroundColor: Color(0xffe6e6e6),
       appBar: AppBar(
         //leading: Icon(Icons.location_on,color: Color(0xff336600),size:30),
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
         title: Text('What are you offering',style: TextStyle(color: Colors.white)),
         centerTitle: true,
@@ -68,6 +69,7 @@ class _SellPageState extends State<SellPage> {
               ],
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(22),
+                bottomRight: Radius.circular(22),
                 topLeft: Radius.circular(22),
                 topRight: Radius.circular(22),
               ),
@@ -76,8 +78,9 @@ class _SellPageState extends State<SellPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Icon(Icons.directions_car),
-                Text(element.category_name.toString()),
+                Icon(Icons.directions_car,size:30,color: Theme.of(context).primaryColor),
+                Padding(padding: EdgeInsets.all(5)),
+                Text(element.category_name.toString(),style: AppThemes.subtitle),
               ],
             ),
           ),

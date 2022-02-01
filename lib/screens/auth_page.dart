@@ -1,3 +1,4 @@
+import 'package:farmer/Sizeconfig.dart';
 import 'package:farmer/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -58,7 +59,7 @@ class _AuthPageState extends State<AuthPage> {
                     },
                   ),
                 ),
-                title: Text(auth.name != '' || auth.name != null ? auth.name.toString() :'Login'),
+                title: Text(auth.name != '' || auth.name != null ? auth.name.toString() :'Login',style: AppThemes.subtitle),
                 subtitle: Text(auth.name != '' || auth.name != null ? '': 'Login in to your account'),
               ),
               onTap: (){
@@ -71,10 +72,10 @@ class _AuthPageState extends State<AuthPage> {
             SizedBox(height: 40),
             Divider(),
             ListTile(
-              leading: Icon(Icons.person,color: Theme.of(context).cursorColor,size: 40,),
-              title: Text('Help & Support'),
-              subtitle: Text('Help center & legal terms'),
-              trailing: Icon(Icons.arrow_forward_ios,color: Theme.of(context).cursorColor,size:15),
+              leading: Icon(Icons.person,color: Theme.of(context).primaryColor,size: 40,),
+              title: Text('Help & Support',style: AppThemes.subtitle),
+              subtitle: Text('Help center & legal terms',style: AppThemes.title),
+              trailing: Icon(Icons.arrow_forward_ios,color: Theme.of(context).primaryColor,size:15),
             ),
             Divider(),
             SizedBox(height: 20),
@@ -84,7 +85,7 @@ class _AuthPageState extends State<AuthPage> {
                 margin: EdgeInsets.only(left: 20, right: 20,bottom: 10),
                 width: MediaQuery.of(context).size.width/ 1,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).buttonColor,
+                  color: Theme.of(context).backgroundColor,
                   borderRadius: BorderRadius.all(Radius.circular(50.0)),
                   border: Border.all(
                     color: Colors.white,

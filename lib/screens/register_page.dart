@@ -147,10 +147,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Color(0xffe6e6e6),
+                      color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.all(Radius.circular(50.0)),
                       border: Border.all(
-                        color: Colors.black12,
+                        color: Colors.white,
                         width: 1.2,
                         style: BorderStyle.solid,
                       ),
@@ -206,7 +206,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         prefixIcon: Container(
                           padding: EdgeInsets.only(top: 0), // add padding to adjust icon
-                          child: Icon(Icons.person,color: Theme.of(context).cursorColor),
+                          child: Icon(Icons.person,color: Theme.of(context).primaryColor),
                         ),   //
                       ),
                       keyboardType :
@@ -259,7 +259,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         prefixIcon: Container(
                           padding: EdgeInsets.only(top: 0), // add padding to adjust icon
-                          child: Icon(Icons.mail,color: Theme.of(context).cursorColor),
+                          child: Icon(Icons.mail,color: Theme.of(context).primaryColor),
                         ),   //
                       ),
                       keyboardType :
@@ -316,7 +316,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         prefixIcon: Container(
                           padding: EdgeInsets.only(top: 0), // add padding to adjust icon
-                          child: Icon(Icons.phone,color: Theme.of(context).cursorColor),
+                          child: Icon(Icons.phone,color: Theme.of(context).primaryColor),
                         ),   //
                       ),
                       keyboardType :
@@ -372,10 +372,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         prefixIcon: Container(
                           padding: EdgeInsets.only(top: 0), // add padding to adjust icon
-                          child: Icon(Icons.lock,color: Theme.of(context).cursorColor),
+                          child: Icon(Icons.lock,color: Theme.of(context).primaryColor),
                         ),
                         suffixIcon: InkWell(
-                          child: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off,color: Theme.of(context).cursorColor),
+                          child: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off,color: Theme.of(context).primaryColor),
                           onTap: () {
                             setState(() {
                               passwordVisible = !passwordVisible;

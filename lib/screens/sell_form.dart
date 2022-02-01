@@ -62,17 +62,18 @@ class _SellFormState extends State<SellFormPage> {
     return Scaffold(
       //backgroundColor: Theme.of(context).primaryColor,
       backgroundColor: Color(0xffe6e6e6),
-      appBar: AppBar(backgroundColor: Colors.white,elevation: 0.0,automaticallyImplyLeading: false,),
+      appBar: AppBar(backgroundColor: Theme.of(context).primaryColor,elevation: 0.0,automaticallyImplyLeading: true,),
       body: loading == true ? Center(child: CircularProgressIndicator(),) : Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          //color: Colors.white,
         ),
         child: SingleChildScrollView(
           child: Form(
               key: _formKey,
               child: Column(
-            children: <Widget>[
+              children: <Widget>[
               Container(
+                margin:const EdgeInsets.all(25),
                 padding:const EdgeInsets.all(5),
                 width: 100,
                 height: 100,
@@ -290,7 +291,7 @@ class _SellFormState extends State<SellFormPage> {
           padding: EdgeInsets.all(5),
           width: MediaQuery.of(context).size.width/ 1,
           decoration: BoxDecoration(
-            color: Theme.of(context).buttonColor,
+            color: Theme.of(context).backgroundColor,
             borderRadius: BorderRadius.all(Radius.circular(0.0)),
             border: Border.all(
               color: Colors.white,
@@ -316,7 +317,7 @@ class _SellFormState extends State<SellFormPage> {
         onTap:() async {
           if (_formKey.currentState!.validate()) {
             setState(() {
-              loading = false;
+              loading = true;
             });
 
             // If the form is valid, display a snackbar. In the real world,

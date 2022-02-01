@@ -1,4 +1,6 @@
+import 'package:farmer/Sizeconfig.dart';
 import 'package:farmer/config/config.dart';
+import 'package:farmer/presentation/my_flutter_app_icons.dart';
 import 'package:farmer/providers/ads.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -21,7 +23,7 @@ class _HomePageState extends State<HomePage> {
    LocationPermission? permission;
 
   bool searchTapped = false;
-  Widget appBarTitle = new Text("", style: new TextStyle(color: Colors.white),);
+  Widget appBarTitle = new Text("", style: new TextStyle(color: Colors.white));
   Icon actionIcon = new Icon(Icons.search, color: Colors.white,);
   TextEditingController searchText = TextEditingController();
 
@@ -54,7 +56,7 @@ class _HomePageState extends State<HomePage> {
 
   void _handleSearchEnd() {
     setState(() {
-      this.actionIcon = new Icon(Icons.search, color: Colors.white,);
+      this.actionIcon = new Icon(MyFlutterApp.search, color: Colors.white,);
       this.appBarTitle =
       new Text("", style: new TextStyle(color: Colors.white),);
       _IsSearching = false;
@@ -72,7 +74,7 @@ class _HomePageState extends State<HomePage> {
       ads!.getads();
     }
     return Scaffold(
-
+      backgroundColor: Color(0xffe6e6e6),
         body: ads!.dataLoaded  == 0 ? Center(child: CircularProgressIndicator(),) :CustomScrollView(
           slivers: <Widget>[
             SliverAppBar(
@@ -83,46 +85,66 @@ class _HomePageState extends State<HomePage> {
               pinned: true,
               snap: false,
               floating: false,
-              expandedHeight: 120.0,
-              leading: Icon(Icons.location_on),
+              expandedHeight: 150.0,
+              leading: Icon(MyFlutterApp.location),
               title: appBarTitle,
               actions: <Widget>[
-                new IconButton(icon: actionIcon, onPressed: () {
-                  setState(() {
-                    if (this.actionIcon.icon == Icons.search) {
-                      this.actionIcon = new Icon(Icons.close, color: Colors.white,);
-                      this.appBarTitle = new TextField(
-                        controller: searchText,
-                        onChanged: (value){
-                          ads!.searchAds(value);
-                        },
-                        style: new TextStyle(
-                          color: Colors.white,
-
-                        ),
-                        decoration: new InputDecoration(
-                            prefixIcon: new Icon(Icons.search, color: Colors.white),
-                            hintText: "Search...",
-                            hintStyle: new TextStyle(color: Colors.white)
-                        ),
-                      );
-                       _handleSearchStart();
-                    }
-                    else {
-                      _handleSearchEnd();
-                    }
-                  });
-                },),
-
-
+                new Container(
+                  decoration:  BoxDecoration(
+                    //color: Theme.of(context).primaryColor,
+                   ),
+                  child: IconButton(icon: actionIcon, onPressed: () {
+                    setState(() {
+                      if (this.actionIcon.icon == MyFlutterApp.search) {
+                        this.actionIcon = new Icon(Icons.close, color: Colors.white,);
+                        this.appBarTitle = new Container(
+                            color: Theme.of(context).primaryColor,
+                            width: MediaQuery.of(context).size.width,
+                            child: TextField(
+                              controller: searchText,
+                              onChanged: (value){
+                                ads!.searchAds(value);
+                              },
+                              style: new TextStyle(
+                                color: Colors.white,
+                              ),
+                              decoration: new InputDecoration(
+                                  border: new UnderlineInputBorder(
+                                    borderSide: new BorderSide(color: Colors.white),
+                                  ),
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white),
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white
+                                    ),
+                                  ),
+                                  prefixIcon: new Icon(Icons.search, color: Colors.white),
+                                  hintText: "Search...",
+                                  hintStyle: new TextStyle(color: Colors.white)
+                              ),
+                            )
+                        );
+                        _handleSearchStart();
+                      }
+                      else {
+                        _handleSearchEnd();
+                      }
+                    });
+                  }),
+                ),
               ],
-              flexibleSpace:  FlexibleSpaceBar(
-                title: Text(currentAddress,style: TextStyle(fontSize: 16,color: Colors.white)),
-                //background: ,
+              flexibleSpace:  Container(
+                padding: EdgeInsets.only(right: 35),
+                child: FlexibleSpaceBar(
+                  //currentAddress 'vip road near dominos first flor above hdfc bank Zirkpur'
+                  title: Text(currentAddress,maxLines: 1,overflow: TextOverflow.ellipsis,style: TextStyle(fontSize: 14,color: Colors.white)),
+                  //background: ,
+                ),
               ),
               shape: ContinuousRectangleBorder(
                   borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(230), bottomRight: Radius.circular(230))),
+                      bottomLeft: Radius.circular(120), bottomRight: Radius.circular(120))),
             ),
 
             const SliverToBoxAdapter(
@@ -137,7 +159,7 @@ class _HomePageState extends State<HomePage> {
 
             SliverGrid(
               gridDelegate:
-              new SliverGridDelegateWithFixedCrossAxisCount(crossAxisSpacing: 2.0, mainAxisSpacing: 0.0, crossAxisCount: 2,childAspectRatio: MediaQuery.of(context).size.width /
+              new SliverGridDelegateWithFixedCrossAxisCount(crossAxisSpacing: 4.0, mainAxisSpacing: 4.0, crossAxisCount: 2,childAspectRatio: MediaQuery.of(context).size.width /
                   (370 )),
               delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
@@ -148,7 +170,6 @@ class _HomePageState extends State<HomePage> {
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
-
                           boxShadow: [ //background color of box
                             BoxShadow(
                               color: Colors.black12,
@@ -176,28 +197,31 @@ class _HomePageState extends State<HomePage> {
                               height: 80,
                             ),
                             SizedBox(height:(3)),
-                            Expanded(child: Text(ads!.addata[index].adtitle.toString())),
+                            Expanded(child: Text(ads!.addata[index].adtitle.toString(),maxLines: 1,overflow: TextOverflow.ellipsis,
+                            style: AppThemes.title)),
                             SizedBox(height:(3)),
                             Row(
                               children: <Widget>[
-                                Text(' RS: '),
-                                Expanded(child: Text(ads!.addata[index].price.toString())),
+                                Icon(MyFlutterApp.rupee,size: 16,),
+                                Expanded(child: Text(ads!.addata[index].price.toString(),maxLines: 1,overflow: TextOverflow.ellipsis,
+                                    style: AppThemes.title)),
                               ],
                             ),
-                            /*SizedBox(height:(3)),
+                            SizedBox(height:(3)),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
                                 Text('2017 - '),
-                                Expanded(child: Text(' 70,0000km')),
+                                Expanded(child: Text(' 70,0000km',style: AppThemes.title)),
                               ],
-                            ),*/
+                            ),
                             SizedBox(height:(3)),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Icon(Icons.location_on,size:15),
-                                Expanded(child: Text(ads!.addata[index].location.toString())),
+                                Icon(MyFlutterApp.location,size:15),
+                                 Expanded(child: Text(ads!.addata[index].location.toString(),maxLines: 1,overflow: TextOverflow.ellipsis,
+                                 style: AppThemes.title_location)),
                               ],
                             ),
                           ],

@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
     auth = Provider.of<Auth>(context);
     return Scaffold(
       backgroundColor: Color(0xffe6e6e6),
-       appBar: AppBar(backgroundColor: Colors.transparent,elevation: 0.0,automaticallyImplyLeading: false,),
+      // appBar: AppBar(backgroundColor: Colors.transparent,elevation: 0.0,automaticallyImplyLeading: false,),
        body: loading ==true? Center(child: CircularProgressIndicator()) : Container(
          decoration: BoxDecoration(
              /*gradient: LinearGradient(
@@ -98,10 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                      width: 100,
                      height: 100,
                      decoration: BoxDecoration(
-                       color: Color(0xffe6e6e6),
+                       color: Theme.of(context).primaryColor,
                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
                        border: Border.all(
-                         color: Colors.black12,
+                         color: Colors.white,
                          width: 1.2,
                          style: BorderStyle.solid,
                        ),
@@ -158,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                          ),
                          prefixIcon: Container(
                            padding: EdgeInsets.only(top: 0), // add padding to adjust icon
-                           child: Icon(Icons.mail,color: Theme.of(context).cursorColor),
+                           child: Icon(Icons.mail,color: Theme.of(context).primaryColor),
                          ),   //
                        ),
                        keyboardType :
@@ -212,10 +212,10 @@ class _LoginPageState extends State<LoginPage> {
                          ),
                          prefixIcon: Container(
                            padding: EdgeInsets.only(top: 0), // add padding to adjust icon
-                           child: Icon(Icons.lock,color: Theme.of(context).cursorColor),
+                           child: Icon(Icons.lock,color: Theme.of(context).primaryColor),
                          ),
                          suffixIcon: InkWell(
-                           child: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off,color: Theme.of(context).cursorColor),
+                           child: Icon(passwordVisible ? Icons.visibility : Icons.visibility_off,color: Theme.of(context).primaryColor),
                            onTap: () {
                              setState(() {
                                passwordVisible = !passwordVisible;
