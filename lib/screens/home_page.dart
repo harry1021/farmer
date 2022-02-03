@@ -188,7 +188,8 @@ class _HomePageState extends State<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             ads!.addata[index].attachment != null || ads!.addata[index].attachment != '' ?
-                            Image.network(Configuration.PUBLIC_URL+ads!.addata[index].attachment.toString(),
+
+                            Image.network(ads!.addata[index].attachment.toString().contains(',') ? Configuration.PUBLIC_URL+ads!.addata[index].attachment.toString().split(',')[0] : Configuration.PUBLIC_URL+ads!.addata[index].attachment.toString(),
                               width: MediaQuery.of(context).size.width,
                               height: 80,
                             ) :

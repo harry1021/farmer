@@ -8,6 +8,8 @@ import 'package:farmer/providers/authentication_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:multi_image_picker2/multi_image_picker2.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'register_page.dart';
@@ -22,12 +24,13 @@ class SellFormImages extends StatefulWidget {
 }
 
 class _SellFormState extends State<SellFormImages> {
-   File? _image;
-
-   final ImagePicker _picker = ImagePicker();
-   var id;
+  File? _image;
+  List<File> images = <File>[];
+  List<Asset> imageList = <Asset>[];
+  final ImagePicker _picker = ImagePicker();
+  var id;
   bool loading = false;
-   _SellFormState(this.id);
+  _SellFormState(this.id);
   _imgFromCamera() async {
     // Capture a photo
     final File? image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -39,17 +42,73 @@ class _SellFormState extends State<SellFormImages> {
       _image = image;
     });
   }
-
-  _imgFromGallery() async {
-    File image = await  ImagePicker.pickImage(
+  Widget buildGridView() {
+    return GridView.count(
+      crossAxisCount: 3,
+      children: List.generate(images.length, (index) {
+        Asset asset = imageList[index];
+        return AssetThumb(
+          asset: asset,
+          width: 300,
+          height: 300,
+        );
+      }),
+    );
+  }
+  _loadAssets() async {
+    /*File image = await  ImagePicker.pickImage(
         source: ImageSource.gallery, imageQuality: 50
     );
+    setState(() {
+       _image = image;
+    });*/
+    List<Asset> resultList = <Asset>[];
+    String error = 'No Error Detected';
+
+    try {
+      resultList = await MultiImagePicker.pickImages(
+        maxImages: 6,
+        enableCamera: true,
+        selectedAssets: imageList,
+        cupertinoOptions: CupertinoOptions(
+          takePhotoIcon: "chat",
+          doneButtonTitle: "Fatto",
+        ),
+        materialOptions: MaterialOptions(
+          actionBarColor: "#abcdef",
+          actionBarTitle: "Select pictures",
+          allViewTitle: "All Pictures",
+          useDetailsView: false,
+          selectCircleStrokeColor: "#000000",
+        ),
+      );
+    } on Exception catch (e) {
+      error = e.toString();
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+
 
     setState(() {
-      _image = image;
+      imageList = resultList;
+    });
+    imageList.forEach((element) async {
+      var bytes = await element.getByteData();
+      final buffer = bytes.buffer;
+      Directory tempDir = await getTemporaryDirectory();
+      String tempPath = tempDir.path;
+      var filePath = tempPath + element.name.toString(); // file_01.tmp is dump file, can be anything
+      File image = await new File(filePath).writeAsBytes(
+          buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes));
+      setState(() {
+        images.add(image);
+      });
+
     });
   }
-  void _showPicker(context) {
+  /*oid _showPicker(context) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
@@ -78,7 +137,7 @@ class _SellFormState extends State<SellFormImages> {
           );
         }
     );
-  }
+  }*/
   @override
   Widget build(BuildContext context) {
     Auth auth = Provider.of<Auth>(context);
@@ -95,136 +154,51 @@ class _SellFormState extends State<SellFormImages> {
         decoration: BoxDecoration(
           color:Color(0xffe6e6e6),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              /*Container(
-                padding:const EdgeInsets.all(5),
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 1.2,
-                    style: BorderStyle.solid,
+        child: Column(
+          children: <Widget>[
+            /*GestureDetector(
+              onTap: () {
+                _loadAssets();
+              },
+              child: CircleAvatar(
+                radius: 55,
+                backgroundColor: Colors.transparent,
+                child: _image != null
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(50),
+                  child: Image.file(
+                    _image!,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
                   ),
-                  boxShadow: [ //background color of box
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius:5.0, // soften the shadow
-                      spreadRadius: 1.0, //extend the shadow
-                      offset: Offset(
-                        1.0, // Move to right 10  horizontally
-                        5.0, // Move to bottom 10 Vertically
-                      ),
-                    )
-                  ],
-                ),
-                child: Icon(Icons.perm_media,color:Colors.white,size: 50,),
-              ),
-              SizedBox(height:60),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Container(
-                    padding:const EdgeInsets.all(5),
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 1.2,
-                        style: BorderStyle.solid,
-                      ),
-                      boxShadow: [ //background color of box
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius:5.0, // soften the shadow
-                          spreadRadius: 1.0, //extend the shadow
-                          offset: Offset(
-                            1.0, // Move to right 10  horizontally
-                            5.0, // Move to bottom 10 Vertically
-                          ),
-                        )
-                      ],
+                )
+                    : Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1.2,
+                      style: BorderStyle.solid,
                     ),
-                    child: Icon(Icons.image,color:Colors.white,size: 30,),
+                    borderRadius: BorderRadius.circular(50),
                   ),
-
-                  Container(
-                    padding:const EdgeInsets.all(5),
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 1.2,
-                        style: BorderStyle.solid,
-                      ),
-                      boxShadow: [ //background color of box
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius:5.0, // soften the shadow
-                          spreadRadius: 1.0, //extend the shadow
-                          offset: Offset(
-                            1.0, // Move to right 10  horizontally
-                            5.0, // Move to bottom 10 Vertically
-                          ),
-                        )
-                      ],
-                    ),
-                    child: Icon(Icons.camera_enhance,color:Colors.white,size: 30,),
-                  ),
-                ],
-              ),
-              SizedBox(height:40),
-
-              SizedBox(height:40),*/
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    _showPicker(context);
-                  },
-                  child: CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.transparent,
-                    child: _image != null
-                        ? ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.file(
-                            _image!,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                        : Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 1.2,
-                              style: BorderStyle.solid,
-                            ),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          width: 100,
-                          height: 100,
-                          child: Icon(
-                            MyFlutterApp.device_camera,color:Colors.white,size: 45,
-                          ),
-                        ),
+                  width: 100,
+                  height: 100,
+                  child: Icon(
+                    MyFlutterApp.device_camera,color:Colors.white,size: 45,
                   ),
                 ),
-              )
-            ],
-          ),
+              ),
+            ),*/
+            ElevatedButton(
+              child: Text("Pick images"),
+              onPressed: _loadAssets,
+            ),
+            Expanded(
+              child: buildGridView(),
+            )
+          ],
         ),
       ),
       bottomNavigationBar: InkWell(
@@ -258,7 +232,7 @@ class _SellFormState extends State<SellFormImages> {
         ),
         onTap:() async {
 
-          if(_image == null){
+          if(images.length == 0){
             Fluttertoast.showToast(
                 msg: "Please select image!",
                 toastLength: Toast.LENGTH_SHORT,
@@ -274,18 +248,20 @@ class _SellFormState extends State<SellFormImages> {
           });
           var file = _image;
           print('upload camera image');
-          String apiUrl = Configuration.API_URL + 'upload_image';
+          String apiUrl = Configuration.API_URL + 'postmultipleimages';
           var base64Image;
           var fileName;
           var dio = Dio();
-          base64Image = base64Encode(file!.readAsBytesSync());
-          fileName = file.path.split("/").last;
+          List<List<String>> base64Images = [];
+          for(int i = 0;i<images.length;i++){
+            base64Images.add([base64Encode(images[i].readAsBytesSync()),images[i].path.split("/").last]);
+          }
+          print(base64Images);
           try{
             var response = await dio.post(
                 apiUrl,
                 data: {
-                  "image": base64Image,
-                  "name": fileName,
+                  "images": base64Images,
                   "id": '$id',
                 },
                 options: Options(

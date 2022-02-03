@@ -61,7 +61,7 @@ class _SingleViewPageState extends State<SingleViewPage> {
             Container(
               color: Color(0xffe6e6e6),
               child: ad.attachment != null || ad.attachment != '' ?
-              Image.network(Configuration.PUBLIC_URL+ad.attachment.toString(),
+              Image.network(ad.attachment.toString().contains(',') ? Configuration.PUBLIC_URL+ad.attachment.toString().split(',')[0] : Configuration.PUBLIC_URL+ad.attachment.toString(),
                 width: MediaQuery.of(context).size.width,
                 height: 200,
               ) :
